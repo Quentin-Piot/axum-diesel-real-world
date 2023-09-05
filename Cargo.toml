@@ -1,0 +1,20 @@
+[package]
+name = "axum-diesel-real-world"
+version = "0.1.0"
+edition = "2021"
+
+
+[dependencies]
+axum = { version = "0.6", features = ["macros"] }
+axum-macros = "0.3"
+chrono = { version = "0.4.26", features = ["serde"] }
+diesel = { version = "2.1", features = ["postgres", "uuid", "serde_json"] }
+diesel_migrations = "2"
+deadpool-diesel = { version = "0.4", features = ["postgres"] }
+dotenvy = "0.15"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+uuid = { version = "1.4", features = ["fast-rng", "v4", "serde"] }
