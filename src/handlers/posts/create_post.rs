@@ -1,7 +1,7 @@
 use axum::extract::State;
 use axum::Json;
 
-use crate::domain::models::PostError;
+use crate::domain::models::post::PostError;
 use crate::handlers::posts::{CreatePostRequest, PostResponse};
 use crate::infra::repositories::post_repository;
 use crate::utils::JsonExtractor;
@@ -19,7 +19,7 @@ pub async fn create_post(
 
     let created_post = post_repository::insert(&state.pool, new_post_db)
         .await
-        .map_err(PostError::DbError)?;
+        .map_err(PostError::InfraError)?;
 
     let post_response = PostResponse {
         id: created_post.id,

@@ -1,12 +1,13 @@
 use diesel::{
-    ExpressionMethods, Insertable, QueryDsl, Queryable, RunQueryDsl, Selectable, SelectableHelper,
+    ExpressionMethods, Insertable, PgTextExpressionMethods, QueryDsl, Queryable, RunQueryDsl,
+    Selectable, SelectableHelper,
 };
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::domain::models::Post;
-use crate::infra::db::errors::{db_internal_error, diesel_error, DbError};
+use crate::domain::models::post::PostModel;
 use crate::infra::db::schema::posts;
+use crate::infra::errors::{adapt_infra_error, InfraError};
 
 #[derive(Serialize, Queryable, Selectable)]
 #[diesel(table_name = posts)]
@@ -26,11 +27,17 @@ pub struct NewPostDb {
     pub published: bool,
 }
 
+#[derive(Deserialize)]
+pub struct PostsFilter {
+    published: Option<bool>,
+    title_contains: Option<String>,
+}
+
 pub async fn insert(
     pool: &deadpool_diesel::postgres::Pool,
     new_post: NewPostDb,
-) -> Result<Post, DbError> {
-    let conn = pool.get().await.map_err(db_internal_error)?;
+) -> Result<PostModel, InfraError> {
+    let conn = pool.get().await.map_err(adapt_infra_error)?;
     let res = conn
         .interact(|conn| {
             diesel::insert_into(posts::table)
@@ -39,14 +46,17 @@ pub async fn insert(
                 .get_result(conn)
         })
         .await
-        .map_err(db_internal_error)?
-        .map_err(diesel_error)?;
+        .map_err(adapt_infra_error)?
+        .map_err(adapt_infra_error)?;
 
     Ok(adapt_post_db_to_post(res))
 }
 
-pub async fn get(pool: &deadpool_diesel::postgres::Pool, id: Uuid) -> Result<Post, DbError> {
-    let conn = pool.get().await.map_err(db_internal_error)?;
+pub async fn get(
+    pool: &deadpool_diesel::postgres::Pool,
+    id: Uuid,
+) -> Result<PostModel, InfraError> {
+    let conn = pool.get().await.map_err(adapt_infra_error)?;
     let res = conn
         .interact(move |conn| {
             posts::table
@@ -55,21 +65,36 @@ pub async fn get(pool: &deadpool_diesel::postgres::Pool, id: Uuid) -> Result<Pos
                 .get_result(conn)
         })
         .await
-        .map_err(db_internal_error)?
-        .map_err(diesel_error)?;
+        .map_err(adapt_infra_error)?
+        .map_err(adapt_infra_error)?;
 
     Ok(adapt_post_db_to_post(res))
 }
 
-pub async fn get_all(pool: &deadpool_diesel::postgres::Pool) -> Result<Vec<Post>, DbError> {
-    let conn = pool.get().await.map_err(db_internal_error)?;
+pub async fn get_all(
+    pool: &deadpool_diesel::postgres::Pool,
+    filter: PostsFilter,
+) -> Result<Vec<PostModel>, InfraError> {
+    let conn = pool.get().await.map_err(adapt_infra_error)?;
     let res = conn
-        .interact(move |conn| posts::table.select(PostDb::as_select()).get_results(conn))
-        .await
-        .map_err(db_internal_error)?
-        .map_err(diesel_error)?;
+        .interact(move |conn| {
+            let mut query = posts::table.into_boxed::<diesel::pg::Pg>();
 
-    let posts: Vec<Post> = res
+            if let Some(published) = filter.published {
+                query = query.filter(posts::published.eq(published));
+            }
+
+            if let Some(title_contains) = filter.title_contains {
+                query = query.filter(posts::title.ilike(format!("%{}%", title_contains)));
+            }
+
+            query.select(PostDb::as_select()).load::<PostDb>(conn)
+        })
+        .await
+        .map_err(adapt_infra_error)?
+        .map_err(adapt_infra_error)?;
+
+    let posts: Vec<PostModel> = res
         .into_iter()
         .map(|post_db| adapt_post_db_to_post(post_db))
         .collect();
@@ -77,8 +102,8 @@ pub async fn get_all(pool: &deadpool_diesel::postgres::Pool) -> Result<Vec<Post>
     Ok(posts)
 }
 
-fn adapt_post_db_to_post(post_db: PostDb) -> Post {
-    Post {
+fn adapt_post_db_to_post(post_db: PostDb) -> PostModel {
+    PostModel {
         id: post_db.id,
         title: post_db.title,
         body: post_db.body,

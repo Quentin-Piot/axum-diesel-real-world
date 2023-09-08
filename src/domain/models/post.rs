@@ -1,13 +1,13 @@
 use axum::http::StatusCode;
-use axum::response::IntoResponse;
 use axum::Json;
+use axum::response::IntoResponse;
 use serde_json::json;
 use uuid::Uuid;
 
-use crate::infra::db::errors::DbError;
+use crate::infra::errors::InfraError;
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Post {
+pub struct PostModel {
     pub id: Uuid,
     pub title: String,
     pub body: String,
@@ -18,7 +18,7 @@ pub struct Post {
 pub enum PostError {
     InternalServerError,
     NotFound(Uuid),
-    DbError(DbError),
+    InfraError(InfraError),
 }
 
 impl IntoResponse for PostError {
@@ -26,9 +26,9 @@ impl IntoResponse for PostError {
         let (status, err_msg) = match self {
             Self::NotFound(id) => (
                 StatusCode::NOT_FOUND,
-                format!("Post with id {} has not been found", id),
+                format!("PostModel with id {} has not been found", id),
             ),
-            Self::DbError(db_error) => (
+            Self::InfraError(db_error) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 format!("Internal server error: {}", db_error),
             ),
@@ -40,7 +40,7 @@ impl IntoResponse for PostError {
         (
             status,
             Json(
-                json!({"resource":"Post", "message": err_msg, "happened_at" : chrono::Utc::now() }),
+                json!({"resource":"PostModel", "message": err_msg, "happened_at" : chrono::Utc::now() }),
             ),
         )
             .into_response()

@@ -24,7 +24,7 @@ async fn handler_404() -> impl IntoResponse {
     )
 }
 
-pub fn posts_route(state: AppState) -> Router<AppState> {
+fn posts_route(state: AppState) -> Router<AppState> {
     Router::new()
         .route("/", post(create_post))
         .route("/", get(list_posts))

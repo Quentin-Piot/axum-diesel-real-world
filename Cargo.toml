@@ -14,7 +14,7 @@ deadpool-diesel = { version = "0.4", features = ["postgres"] }
 dotenvy = "0.15"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-tokio = { version = "1.0", features = ["full"] }
+tokio = { version = "1.0", features = ["sync", "macros", "rt-multi-thread"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 uuid = { version = "1.4", features = ["fast-rng", "v4", "serde"] }

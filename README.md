@@ -4,7 +4,9 @@
 [![GitHub license](https://img.shields.io/github/license/Quentin-Piot/axum-diesel-real-world.svg)](https://github.com/Quentin-Piot/axum-diesel-real-world/blob/master/LICENSE)
 [![GitHub issues](https://img.shields.io/github/issues/Quentin-Piot/axum-diesel-real-world.svg)](https://github.com/Quentin-Piot/axum-diesel-real-world/issues)
 
-A modular Rust backend template based on the Domain-Driven Design (DDD) architecture, utilizing the Axum and Diesel frameworks. This repository serves as a starting point for building real-world applications in Rust, with different modules and frameworks to choose from.
+A modular Rust backend template based on the Domain-Driven Design (DDD) architecture, utilizing the Axum and Diesel
+frameworks. This repository serves as a starting point for building real-world applications in Rust, with different
+modules and frameworks to choose from.
 
 ## Table of Contents
 
@@ -18,7 +20,9 @@ A modular Rust backend template based on the Domain-Driven Design (DDD) architec
 
 ## Introduction
 
-This repository provides a boilerplate for developing Rust backend applications following the principles of Domain-Driven Design (DDD). It leverages the power of [Axum](https://github.com/tokio-rs/axum) for building asynchronous APIs and [Diesel](https://github.com/diesel-rs/diesel) for working with databases.
+This repository provides a boilerplate for developing Rust backend applications following the principles of
+Domain-Driven Design (DDD). It leverages the power of [Axum](https://github.com/tokio-rs/axum) for building asynchronous
+APIs and [Diesel](https://github.com/diesel-rs/diesel) for working with databases.
 
 ## Features
 
@@ -37,7 +41,7 @@ Follow these steps to get started with your Rust backend project based on this t
    ```bash
    git clone https://github.com/Quentin-Piot/axum-diesel-real-world.git
       ```
-  
+
 
 2. Choose a specific module/framework branch or work with the default configuration.
 
@@ -51,20 +55,21 @@ Follow these steps to get started with your Rust backend project based on this t
 
 ## Project Structure
 
-The project follows a modular structure to keep your code organized and maintainable. Here's a brief overview of the project structure:
+The project follows a modular structure to keep your code organized and maintainable. Here's a brief overview of the
+project structure:
 
 - `src/`: Contains the main source code of your application.
     - `domain/`: Define your domain logic using DDD principles.
-      - `models/`: Define your domain models.
+        - `models/`: Define your domain models.
     - `handlers/`: Define your API handlers.
     - `infra/`: Define your infrastructure logic.
-      - `db/`: Define your database logic.
-      - `repositories/`: Define your repositories.
+        - `db/`: Define your database logic.
+        - `repositories/`: Define your repositories.
     - `utils/`: Define your utility functions.
-      - `custom_extractors/`: Define your custom extractors for Axum.
+        - `custom_extractors/`: Define your custom extractors for Axum.
     - `main.rs`: Application entry point.
     - `routes.rs`: Define your API routes.
-    - `config.rs`: Define your application configuration.
+    - `config.rs`: Define your application configuration : use OnceCell for static config file.
     - `error.rs`: Define your custom global error types.
 
 - `migrations/`: Database migration files for Diesel (if applicable).
