@@ -25,13 +25,7 @@ pub struct AppState {
 
 #[tokio::main]
 async fn main() {
-    tracing_subscriber::registry()
-        .with(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "example_tokio_postgres=debug".into()),
-        )
-        .with(tracing_subscriber::fmt::layer())
-        .init();
+    init_tracing();
 
     let config = config().await;
 
@@ -42,11 +36,7 @@ async fn main() {
     let pool = Pool::builder(manager).build().unwrap();
 
     {
-        let conn = pool.get().await.unwrap();
-        conn.interact(|conn| conn.run_pending_migrations(MIGRATIONS).map(|_| ()))
-            .await
-            .unwrap()
-            .unwrap();
+        run_migrations(&pool).await;
     }
 
     let state = AppState { pool };

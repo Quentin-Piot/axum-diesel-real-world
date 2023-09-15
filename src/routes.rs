@@ -9,7 +9,7 @@ use crate::AppState;
 pub fn app_router(state: AppState) -> Router<AppState> {
     Router::new()
         .route("/", get(root))
-        .nest("/v1/posts", posts_route(state.clone()))
+        .nest("/v1/posts", posts_routes(state.clone()))
         .fallback(handler_404)
 }
 
@@ -24,7 +24,7 @@ async fn handler_404() -> impl IntoResponse {
     )
 }
 
-fn posts_route(state: AppState) -> Router<AppState> {
+fn posts_routes(state: AppState) -> Router<AppState> {
     Router::new()
         .route("/", post(create_post))
         .route("/", get(list_posts))
