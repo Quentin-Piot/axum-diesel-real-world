@@ -1,79 +1,152 @@
 # Axum Diesel Real-World Example
 
-[![GitHub stars](https://img.shields.io/github/stars/Quentin-Piot/axum-diesel-real-world.svg)](https://github.com/Quentin-Piot/axum-diesel-real-world/stargazers)
+[![GitHub stars](https://img.shields.io/github/stars/Quentin-Piot/axum-diesel-real-world.svg?style=social)](https://github.com/Quentin-Piot/axum-diesel-real-world/stargazers)
 [![GitHub license](https://img.shields.io/github/license/Quentin-Piot/axum-diesel-real-world.svg)](https://github.com/Quentin-Piot/axum-diesel-real-world/blob/master/LICENSE)
 [![GitHub issues](https://img.shields.io/github/issues/Quentin-Piot/axum-diesel-real-world.svg)](https://github.com/Quentin-Piot/axum-diesel-real-world/issues)
 
-A modular Rust backend template based on the Domain-Driven Design (DDD) architecture, utilizing the Axum and Diesel
-frameworks. This repository serves as a starting point for building real-world applications in Rust, with different
-modules and frameworks to choose from.
+A modular Rust backend template designed with a Domain-Driven Design (DDD) approach, powered by the Axum web framework and Diesel ORM. This repository aims to provide a robust starting point for building scalable and maintainable real-world applications in Rust.
 
 ## Table of Contents
 
 - [Introduction](#introduction)
 - [Features](#features)
+- [Prerequisites](#prerequisites)
 - [Getting Started](#getting-started)
 - [Project Structure](#project-structure)
-- [Available Modules](#available-modules)
+- [Configuration](#configuration)
+- [Database Migrations](#database-migrations)
+- [Running the Application](#running-the-application)
 - [Contributing](#contributing)
 - [License](#license)
 
 ## Introduction
 
-This repository provides a boilerplate for developing Rust backend applications following the principles of
-Domain-Driven Design (DDD). It leverages the power of [Axum](https://github.com/tokio-rs/axum) for building asynchronous
-APIs and [Diesel](https://github.com/diesel-rs/diesel) for working with databases.
+This repository offers a boilerplate for developing Rust backend applications, emphasizing clean architecture through Domain-Driven Design. It leverages the asynchronous capabilities of [Axum](https://github.com/tokio-rs/axum) for building high-performance web APIs and [Diesel](https://github.com/diesel-rs/diesel) for efficient database interaction, primarily with PostgreSQL.
 
 ## Features
 
-- Domain-Driven Design (DDD) architecture.
-- Integration with Axum for building asynchronous APIs.
-- Integration with Diesel for database operations.
-- Modular project structure for easy extension and maintainability.
-- Authentication modules with OAuth (optional).
+-   **Domain-Driven Design (DDD)**: Clear separation of concerns with domain, application, and infrastructure layers.
+-   **Asynchronous API**: Built with Axum, leveraging the Tokio runtime.
+-   **Database ORM**: Uses Diesel for database operations and migrations.
+-   **Connection Pooling**: Integrates `deadpool-diesel` for managing database connections.
+-   **Configuration Management**: Centralized configuration loading.
+-   **Error Handling**: Structured application-wide error management.
+-   **Modular Structure**: Designed for easy extension and maintainability.
+-   **Logging**: Integrated `tracing` for structured logging.
+-   *(Optional: Authentication modules with OAuth, etc. - can be added as features are developed)*
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+-   [Rust (latest stable version recommended)](https://www.rust-lang.org/tools/install)
+-   [Diesel CLI](https://diesel.rs/guides/getting-started) (for your specific database, e.g., PostgreSQL):
+    ```bash
+    cargo install diesel_cli --no-default-features --features postgres
+    ```
+-   A running PostgreSQL instance (or your database of choice, with adjustments).
 
 ## Getting Started
 
-Follow these steps to get started with your Rust backend project based on this template:
-
-1. Clone this repository:
-
-   ```bash
-   git clone https://github.com/Quentin-Piot/axum-diesel-real-world.git
-      ```
-
-
-2. Choose a specific module/framework branch or work with the default configuration.
-
-3. Customize the project to your needs.
-
-4. uild and run your Rust backend:
-
+1.  **Clone the repository:**
     ```bash
-    cargo run
+    git clone https://github.com/Quentin-Piot/axum-diesel-real-world.git
+    cd axum-diesel-real-world
+    ```
+
+2.  **Set up your environment:**
+    Create a `.env` file in the root of the project by copying the example:
+    ```bash
+    cp .env.example .env
+    ```
+    Edit `.env` and set your `DATABASE_URL` and other configurations as needed. For example:
+    ```env
+    DATABASE_URL=postgres://user:password@localhost/your_db_name
+    SERVER_HOST=127.0.0.1
+    SERVER_PORT=8000
+    RUST_LOG=axum_diesel_real_world=debug,tower_http=debug
+    ```
+
+3.  **Setup the database and run migrations:**
+    Ensure your PostgreSQL server is running and the database specified in `DATABASE_URL` exists.
+    ```bash
+    diesel setup
+    diesel migration run
+    ```
+    This will create the necessary tables defined in the `migrations/` directory.
+
+4.  **Build the project:**
+    ```bash
+    cargo build
     ```
 
 ## Project Structure
 
-The project follows a modular structure to keep your code organized and maintainable. Here's a brief overview of the
-project structure:
+The project follows a DDD-inspired modular structure:
 
-- `src/`: Contains the main source code of your application.
-    - `domain/`: Define your domain logic using DDD principles.
-        - `models/`: Define your domain models.
-    - `handlers/`: Define your API handlers.
-    - `infra/`: Define your infrastructure logic.
-        - `db/`: Define your database logic.
-        - `repositories/`: Define your repositories.
-    - `utils/`: Define your utility functions.
-        - `custom_extractors/`: Define your custom extractors for Axum.
-    - `main.rs`: Application entry point.
-    - `routes.rs`: Define your API routes.
-    - `config.rs`: Define your application configuration : use OnceCell for static config file.
-    - `error.rs`: Define your custom global error types.
+-   `src/`: Main application source code.
+    -   `config.rs`: Application configuration loading (e.g., using `once_cell`).
+    -   `domain/`: Core business logic and domain entities.
+        -   `models.rs`: Domain model structs (distinct from database persistence models if needed).
+        -   `services/`: Domain services.
+    -   `errors.rs`: Custom application-wide error types and conversions.
+    -   `handlers/`: Axum request handlers (controllers in MVC terms).
+    -   `infra/`: Infrastructure concerns like database access, external API clients.
+        -   `db.rs`: Database connection setup, connection pool.
+        -   `repositories.rs`: Implementations of repository patterns for data access.
+    -   `models.rs`: (Could be here or in `infra/`) Persistence-layer structs, often generated or used by Diesel.
+    -   `routes.rs`: API route definitions.
+    -   `schema.rs`: Auto-generated by Diesel, representing the database schema.
+    -   `state.rs`: Defines `AppState` shared across handlers.
+    -   `utils/`: Utility functions, custom extractors, etc.
+    -   `main.rs`: Application entry point, server setup.
+-   `migrations/`: Diesel database migration files.
+-   `.env.example`: Example environment file.
+-   `Cargo.toml`: Project dependencies and metadata.
 
-- `migrations/`: Database migration files for Diesel (if applicable).
+## Configuration
 
-### License
+Application configuration is managed via environment variables, typically loaded from a `.env` file using a crate like `dotenvy`. The `src/config.rs` module handles loading and providing access to these configurations.
 
-This project is licensed under the MIT License.
+## Database Migrations
+
+Diesel is used for managing database schema changes.
+-   To create a new migration:
+    ```bash
+    diesel migration generate your_migration_name
+    ```
+-   To run pending migrations:
+    ```bash
+    diesel migration run
+    ```
+-   To revert the last migration:
+    ```bash
+    diesel migration redo
+    ```
+The application also runs pending migrations automatically on startup.
+
+## Running the Application
+
+-   **Development Mode:**
+    ```bash
+    cargo run
+    ```
+    The server will typically start on `http://127.0.0.1:3000` (or as configured).
+
+-   **Release Mode:**
+    ```bash
+    cargo build --release
+    ./target/release/axum-diesel-real-world
+    ```
+
+## Contributing
+
+Contributions are welcome! Please feel free to open an issue or submit a pull request.
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

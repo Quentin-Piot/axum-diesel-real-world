@@ -1,16 +1,19 @@
-use axum::http::StatusCode;
-use axum::response::IntoResponse;
-use axum::routing::{get, post};
-use axum::Router;
+use axum::{
+    http::StatusCode,
+    response::IntoResponse,
+    routing::{get, post},
+    Router,
+};
 
 use crate::handlers::posts::{create_post, get_post, list_posts};
 use crate::AppState;
 
-pub fn app_router(state: AppState) -> Router<AppState> {
+pub fn app_router(state: AppState) -> Router {
     Router::new()
         .route("/", get(root))
         .nest("/v1/posts", posts_routes(state.clone()))
         .fallback(handler_404)
+        .with_state(state)
 }
 
 async fn root() -> &'static str {
@@ -28,6 +31,6 @@ fn posts_routes(state: AppState) -> Router<AppState> {
     Router::new()
         .route("/", post(create_post))
         .route("/", get(list_posts))
-        .route("/:id", get(get_post))
+        .route("/{id}", get(get_post))
         .with_state(state)
 }
