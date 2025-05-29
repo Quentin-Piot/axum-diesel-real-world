@@ -5,11 +5,6 @@ use std::net::SocketAddr;
 use tracing_subscriber::prelude::*;
 use diesel_migrations::MigrationHarness;
 
-use axum::http::StatusCode;
-use axum::Json;
-use axum::response::IntoResponse;
-use serde_json::json;
-
 mod config;
 mod domain;
 mod errors;
@@ -20,36 +15,11 @@ mod state;
 mod utils;
 
 use crate::config::config;
+use crate::errors::{internal_error, AppError};
 use crate::routes::app_router;
 use crate::state::AppState;
 
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations/");
-
-#[derive(Debug)]
-pub enum AppError {
-    InternalServerError,
-    BodyParsingError(String),
-}
-
-pub fn internal_error<E>(_err: E) -> AppError {
-    AppError::InternalServerError
-}
-
-impl IntoResponse for AppError {
-    fn into_response(self) -> axum::response::Response {
-        let (status, err_msg) = match self {
-            Self::InternalServerError => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                String::from("Internal Server Error"),
-            ),
-            Self::BodyParsingError(message) => (
-                StatusCode::BAD_REQUEST,
-                format!("Bad request error: {}", message),
-            ),
-        };
-        (status, Json(json!({ "message": err_msg }))).into_response()
-    }
-}
 
 #[tokio::main]
 async fn main() {

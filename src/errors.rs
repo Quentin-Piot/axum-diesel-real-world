@@ -3,25 +3,22 @@ use axum::Json;
 use axum::response::IntoResponse;
 use serde_json::json;
 
-#[allow(dead_code)]
 #[derive(Debug)]
 pub enum AppError {
-    InternalServerError(String),
+    InternalServerError,
     BodyParsingError(String),
 }
 
-#[allow(dead_code)]
-pub fn internal_error<E: std::error::Error>(err: E) -> AppError {
-    tracing::error!("Internal Server Error: {:?}", err);
-    AppError::InternalServerError(err.to_string())
+pub fn internal_error<E>(_err: E) -> AppError {
+    AppError::InternalServerError
 }
 
 impl IntoResponse for AppError {
     fn into_response(self) -> axum::response::Response {
         let (status, err_msg) = match self {
-            Self::InternalServerError(message) => (
+            Self::InternalServerError => (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Internal Server Error: {}", message),
+                String::from("Internal Server Error"),
             ),
             Self::BodyParsingError(message) => (
                 StatusCode::BAD_REQUEST,
